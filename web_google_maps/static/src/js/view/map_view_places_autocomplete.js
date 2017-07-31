@@ -300,7 +300,7 @@ odoo.define('web.MapViewPlacesAutocomplete', function (require) {
                         var addr = _.map(addrs, function (item) {
                             return place[item];
                         });
-                        result[key] = _.filter(addr).join(', ');
+                        result[key] = _.filter(addr).join(' ');
                     } else {
                         result[key] = place[addrs] || '';
                     }

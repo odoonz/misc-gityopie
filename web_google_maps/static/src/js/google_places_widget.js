@@ -22,11 +22,12 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
             this.places_autocomplete = false;
             this.component_form = MapViewPlacesAutocomplete.GOOGLE_PLACES_COMPONENT_FORM;
             this.fillfields = {
-                street2: ['street_number', 'route', 'administrative_area_level_3', 'administrative_area_level_4', 'administrative_area_level_5'],
-                city: ['locality', 'administrative_area_level_2'],
+                street: 'street_address',
+                street2: 'sublocality_level_1',
+                city: 'locality',
                 zip: 'postal_code',
                 state_id: 'administrative_area_level_1',
-                country_id: 'country',
+                country_id: 'country'
             };
         },
         initialize_content: function () {
@@ -50,15 +51,16 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
             var fields = [];
             if (this.is_fields_valid()) {
                 _.each(this.fillfields, function (val, name) {
+                    var field = {};
                     if (_.contains(self.type_relations, self.field_manager.fields[name].field.type)) {
-                        var field = {
+                        field = {
                             name: name,
                             type: self.field_manager.fields[name].field.type,
                             relation: self.field_manager.fields[name].field.relation
                         };
                         fields.push(field);
                     } else {
-                        var field = {
+                        field = {
                             name: name,
                             type: self.field_manager.fields[name].field.type,
                             relation: false
@@ -72,7 +74,7 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
         set_partner_lat_lng: function (latitude, longitude) {
             var partner = ['partner_latitude', 'partner_longitude'];
             var res = {};
-            if (_.intersection(_.keys(this.field_manager.fields), partner).length == 2) {
+            if (_.intersection(_.keys(this.field_manager.fields), partner).length === 2) {
                 res.partner_latitude = latitude;
                 res.partner_longitude = longitude;
             }
@@ -144,29 +146,52 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
         },
         populate_address: function (place) {
             var self = this;
-            var fields_to_fill = {}
+            var fields_to_fill = {};
             var result = {};
+            var address_components={};
 
-            // initialize object key and value
-            _.each(self.fillfields, function (value, key) {
-                fields_to_fill[key] = [];
+
+
+            // Do some deduping here here between name, route + number,
+            _.each(place.address_components, function(data) {
+                address_components[data.types[0]] = data[self.component_form[data.types[0]]];
+                if (data.types[0] === 'route') {
+                    address_components['short_route'] = data['short_name'];
+                }
+
             });
+            if (address_components.street_number !== undefined && address_components.route !== undefined) {
+                address_components.street_address = [address_components.street_number, address_components.route].join(" ");
+            }
+            if (address_components.premise !== undefined) {
+                self.fillfields.street = 'premise';
+                self.fillfields.street2 = ['street_address', 'sublocality_level_1'];
+            } else {
+                self.fillfields.street = 'street_address';
+                self.fillfields.street2 = 'sublocality_level_1';
+            }
+             // initialize object key and value
+             _.each(self.fillfields, function (value, key) {
+                 fields_to_fill[key] = [];
+             });
+
+            if (address_components['sublocality_level_1'] === address_components['locality']) {
+                delete address_components.sublocality_level_1;
+            }
 
             _.each(self.fillfields, function (options, key) {
-                _.each(place.address_components, function (data) {
-                    if (options instanceof Array && _.contains(options, data.types[0])) {
-                        fields_to_fill[key].push(data[self.component_form[data.types[0]]]);
-                    } else if (options == data.types[0]) {
-                        fields_to_fill[key].push(data[self.component_form[data.types[0]]]);
+                _.each(address_components, function (data, component) {
+                    if (options instanceof Array && _.contains(options, component)) {
+                        fields_to_fill[key].push(data);
+                    } else if (options === component) {
+                        fields_to_fill[key].push(data);
                     }
                 });
             });
 
             _.each(fields_to_fill, function (value, key) {
-                result[key] = key == 'city' ? (value.length > 0 ? value[0] : false) : value.join(', ');
+                result[key] = key === 'city' ? (value.length > 0 ? value[0] : false) : value.join(', ');
             });
-
-            result[this.name] = place.name;
 
             return result;
         },
