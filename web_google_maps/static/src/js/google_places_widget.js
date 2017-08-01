@@ -8,7 +8,6 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
     var Model = require('web.Model');
     var _t = core._t;
 
-
     var FieldCharGooglePlaces = form_widgets.FieldChar.extend({
         template: 'web_google_maps.FieldGooglePlaces',
         display_name: _t('Google Places'),
@@ -149,10 +148,6 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
             var fields_to_fill = {};
             var result = {};
             var address_components={};
-
-
-
-            // Do some deduping here here between name, route + number,
             _.each(place.address_components, function(data) {
                 address_components[data.types[0]] = data[self.component_form[data.types[0]]];
                 if (data.types[0] === 'route') {
@@ -160,6 +155,7 @@ odoo.define('web_google_maps.GooglePlaces', function (require) {
                 }
 
             });
+
             if (address_components.street_number !== undefined && address_components.route !== undefined) {
                 address_components.street_address = [address_components.street_number, address_components.route].join(" ");
             }
