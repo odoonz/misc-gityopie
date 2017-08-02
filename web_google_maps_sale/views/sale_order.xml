@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2017 Graeme Gellatly
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+    <act_window id="act_sale_shipping_map" name="Map" res_model="sale.order" view_type="map" view_mode="map" />
+
+    <record model="ir.ui.view" id="sale_order_form_view">
+        <field name="name">sale.order.map (in web_google_maps_sale)</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <field name="partner_longitude" invisible="1" />
+                <field name="partner_latitude" invisible="1" />
+                <button name="%(web_google_maps_sale.act_sale_shipping_map)d" type="action"
+                        class="oe_stat_button" context="{'search_default_name': name}"
+                        icon="fa-map-marker" string="Map"
+                        attrs="{'invisible': ['|','|',('partner_shipping_id', '=', False),('partner_latitude', '=', 0.0), ('partner_longitude', '=', 0.0)]}"/>
+            </div>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="sale_order_map_view">
+        <field name="name">sale.order.map (in web_google_maps_sale)</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <map string="Map" lat="partner_latitude" lng="partner_longitude">
+                <field name="name"/>
+                <field name="partner_shipping_id"/>
+                <field name="client_order_ref"/>
+                <field name="date_order"/>
+                <field name="amount_total"/>
+                <field name="partner_latitude"/>
+                <field name="partner_longitude"/>
+            </map>
+        </field>
+
+    </record>
+
+    <record model="ir.actions.act_window" id="sale.action_orders">
+        <field name="view_mode">tree,kanban,form,map,calendar,pivot,graph</field>
+    </record>
+
+</odoo>

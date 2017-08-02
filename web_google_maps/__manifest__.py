@@ -16,7 +16,8 @@ form view, it provide autocomplete feature when you typed an address of partner
 3. Routes information
 """,
     'depends': [
-        'website_google_map'
+        'website_google_map',
+        'base_geolocalize'
     ],
     'website': '',
     'data': [

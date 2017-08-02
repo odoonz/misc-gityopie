@@ -7,9 +7,13 @@
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
-                <field name="street" position="attributes">
+                <!--Because field appears multiple times in form we use explicit xpathing-->
+                <xpath expr="//form/sheet/group//field[@name='street']" position="attributes">
                     <attribute name="widget">google_places</attribute>
-                </field>
+                </xpath>
+                <xpath expr="//field[@name='child_ids']//form//field[@name='street']" position="attributes">
+                    <attribute name="widget">google_places</attribute>
+                </xpath>
                 <div name="button_box" position="inside">
                     <button name="%(web_google_maps.act_res_partner_map)d" type="action"
                         class="oe_stat_button" context="{'search_default_name': name}"
