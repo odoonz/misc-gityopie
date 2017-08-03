@@ -75,6 +75,7 @@ odoo.define('web.MapView', function (require) {
             var record = record || {
                 'name': 'XY'
             };
+            record.name = record.name || 'XY';
             var marker = new google.maps.Marker({
                 position: lat_lng,
                 map: this.map,
