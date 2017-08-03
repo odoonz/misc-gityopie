@@ -247,8 +247,13 @@ odoo.define('web.MapView', function (require) {
             var self = this;
             var context = this.dataset.context;
             var mode = mode || 'DRIVING';
-            var origin = new google.maps.LatLng(context.origin_latitude, context.origin_longitude);
-            var destination = new google.maps.LatLng(context.destination_latitude, context.destination_longitude);
+            var optimize_waypoints = (context.optimize === undefined) ? false : context.optimize_waypoints;
+            var roundtrip = (context.roundtrip === undefined) ? false : context.roundtrip;
+            var origin_lat_lng = context.paths.shift();
+            var dest_lat_lng = roundtrip ? origin_lat_lng : context.paths.pop();
+            var origin = new google.maps.LatLng(origin_lat_lng[0], origin_lat_lng[1]);
+            var destination = new google.maps.LatLng(dest_lat_lng[0], dest_lat_lng[1]);
+
             var paths = [{
                 'path': 'origin',
                 'lat_lng': origin
@@ -256,13 +261,23 @@ odoo.define('web.MapView', function (require) {
                 'path': 'destination',
                 'lat_lng': destination
             }];
+            var waypoints = [];
+            _.each(context.paths, function (waypoint){
+                waypoints.push({
+                    location: new google.maps.LatLng(waypoint[0], waypoint[1]),
+                    stopover: true
+                })
+            });
+
             // Append new control button to the map, a control to open the route in a new tab
             this.add_btn_redirection(paths);
 
             this.directionsService.route({
                 'origin': origin,
                 'destination': destination,
+                waypoints: waypoints,
                 travelMode: google.maps.TravelMode[mode],
+                optimizeWaypoints: optimize_waypoints,
                 avoidHighways: false,
                 avoidTolls: false
             }, function (response, status) {

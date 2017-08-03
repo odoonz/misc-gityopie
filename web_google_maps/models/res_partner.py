@@ -13,11 +13,14 @@ class ResPartner(models.Model):
         if not all([user_id.partner_longitude, user_id.partner_latitude]):
             raise exceptions.Warning(_(
                 'You have not defined your geolocation'))
-        context.update({
-            'origin_latitude': user_id.partner_latitude,
-            'origin_longitude': user_id.partner_longitude,
-            'destination_latitude': self.partner_latitude,
-            'destination_longitude': self.partner_longitude
+        context.update({'paths': [
+            (user_id.partner_latitude, user_id.partner_longitude),
+            (-36.7469861, 174.6940059),
+            (-36.777104,174.706789),
+            (-36.782741,174.633398),
+            (-36.751048,174.686846),
+            (self.partner_latitude, self.partner_longitude)
+            ], 'roundtrip': 1, 'optimize': 1
         })
         partners = [user_id.id, self.id]
         view_map_id = self.env.ref('web_google_maps.view_partner_map')
