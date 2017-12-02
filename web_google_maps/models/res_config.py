@@ -62,7 +62,7 @@ GMAPS_LANG_LOCALIZATION = [
 
 
 class WebsiteConfigSettings(models.TransientModel):
-    _inherit = 'website.config.settings'
+    _inherit = 'res.config.settings'
 
     def get_region_selection(self):
         country_ids = self.env['res.country'].search([])
